@@ -29,8 +29,8 @@ Airflow is an open-source platform designed for **programmatically authoring**, 
 
 #### 3 Types of Operator
 - **Action Operators**: _Execute_ an action (Python Operators & Bash Operators)
-- **Action Operators**: _Transfer_ data
-- **Action Operators**: _Wait_ for a Condition to be met
+- **Transfer Operators**: _Transfer_ data
+- **Sensors**: _Wait_ for a Condition to be met
 
 ### Hooks
 ![Hook Concept](./assets/hook.png)   
@@ -47,3 +47,36 @@ In Apache Airflow, a hook is a way to interact with external systems or services
 > A DAG is triggered **AFTER** the `start_date/last_run + the schedule_interval`
 
 ![Dag Scheduling Concept 02](./assets/dag-schedule-2.png)
+
+### Backfilling
+![Backfill and Catchup](./assets/backfill-catchup.png)
+
+
+### Dataset
+
+In Apache Airflow, a dataset refers to a collection of data that is used or manipulated within a workflow. It represents a logical unit of data that can be read, transformed, or written during the execution of tasks within a data pipeline.   
+Datasets in Airflow are typically represented as variables or parameters within operators or as inputs and outputs between tasks. The task dependencies and relationships are defined based on the datasets, ensuring that the tasks are executed in the correct order, with the necessary inputs available.   
+
+- Two Property
+  - `URI` 
+    - Unique identifier of your data
+    - Path to your data
+    - Must compose of only ASCII characters
+    - The URI scheme cannot be `airflow`
+    - Case Sensitive
+  - `Extra`
+    ```python
+    from airflow import Dataset
+    my_file = Dataset(
+        uri='s3://dataset/file.csv',
+        extra={'owner': 'nilanjan.deb'}
+    )   
+    ```
+![Dataset](./assets/dataset-workflow.png)
+
+#### Limitations
+- DAGs can only use Datasets in the same Airflow instance. A DAG cannot wait for a Dataset defined in another Airflow instance.
+- Consumer DAGs are triggered every time a task that updates datasets completes successfully. Airflow doesn't check whether the data has been effectively updated. 
+- You can't combine different schedules like datasets with cron expressions. 
+- If two tasks update the same dataset, as soon as one is done, that triggers the Consumer DAG immediately without waiting for the second task to complete. 
+- Airflow monitors datasets only within the context of DAGs and Tasks. If an external tool updates the actual data represented by a Dataset, Airflow has no way of knowing that.
