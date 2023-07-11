@@ -122,9 +122,24 @@ The KubernetesExecutor runs tasks in separate containers within a Kubernetes clu
 ## Flower
 Flower (also known as Celery Flower) is a web-based **monitoring and administration** tool for Celery, which is a distributed task queue system in Python. Flower provides a user-friendly interface to monitor and manage the execution of tasks and workers in a Celery cluster.
 
-> docker compose config
+> docker compose command
 ```shell
 docker compose down && docker compose --profile flower up -d
 ```
 
 ![Docker Containers](./assets/flower-docker-compose-ps.png)
+
+
+## Celery Queue
+![Celery Queue](./assets/celery-queue.png)
+
+> Code Example
+```python
+from airflow.operators.bash import BashOperator
+
+transform = BashOperator(
+    task_id='transform',
+    bash_command='sleep 10',
+    queue='high_cpu' # by default queue='default'
+)
+```

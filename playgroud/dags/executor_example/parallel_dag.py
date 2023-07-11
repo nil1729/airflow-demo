@@ -30,7 +30,8 @@ with DAG(
 
     transform = BashOperator(
         task_id='transform',
-        bash_command='sleep 10'
+        bash_command='sleep 10',
+        queue='high_cpu'
     )
 
     extract_a >> load_a >> transform
