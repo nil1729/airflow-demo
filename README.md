@@ -143,3 +143,78 @@ transform = BashOperator(
     queue='high_cpu' # by default queue='default'
 )
 ```
+
+## Repetitive Patterns
+![Diagram](./assets/repetitive-pattern.png)
+
+
+### SubDAGs
+In Apache Airflow, a SubDAG is a way to encapsulate a group of tasks within a DAG (Directed Acyclic Graph) as a separate unit. It allows you to organize and modularize complex workflows by creating a hierarchy of DAGs.  
+
+A SubDAG is defined within a parent DAG and behaves like a normal DAG but with a nested structure. It consists of its own tasks, dependencies, and scheduling properties. The SubDAG itself is treated as a single task within the parent DAG, enabling you to create more modular and manageable workflows.
+
+```python
+from airflow import DAG
+from airflow.operators.bash import BashOperator
+from datetime import datetime
+from airflow.operators.subdag import SubDagOperator
+
+def subdag_demo(parent_dag_id, child_dag_id, args):
+    with DAG(
+        dag_id=f"{parent_dag_id}.{child_dag_id}",
+        schedule_interval=args['schedule_interval'],
+        start_date=args['start_date'],
+        catchup=args['catchup']
+    ) as subdag:
+        # define tasks here ...
+        return subdag
+
+with DAG(
+        dag_id='group_dag_by_subdag',
+        schedule_interval='@daily',
+        start_date=datetime(year=2023, month=1, day=1),
+        catchup=False
+) as dag:
+    args = {
+        'schedule_interval': dag.schedule_interval,
+        'start_date': dag.start_date,
+        'catchup': dag.catchup
+    }
+
+    demo_tasks = SubDagOperator(
+        task_id='demo',
+        subdag=subdag_demo(dag.dag_id, 'demo', args)
+    )
+    
+    other_task = BashOperator(...)
+    
+    demo_tasks >> other_task
+```
+
+
+### TaskGroups
+TaskGroups in Apache Airflow (introduced in Airflow 2.0) are a way to logically group and organize tasks within a DAG (Directed Acyclic Graph). TaskGroups provide a visual and conceptual grouping of tasks, making it easier to understand and manage complex workflows.
+
+```python
+from airflow import DAG
+from airflow.operators.bash import BashOperator
+from datetime import datetime
+from airflow.utils.task_group import TaskGroup
+
+def grouped_tasks():
+    with TaskGroup(group_id='group_id', tooltip='group tooltip text') as group:
+        # define tasks here ...
+        return group
+
+with DAG(
+    dag_id='group_dag_by_task_group',
+    schedule_interval='@daily',
+    start_date=datetime(year=2023, month=1, day=1),
+    catchup=False
+) as dag:
+    grouped = grouped_tasks()
+
+    other_task = BashOperator(...)
+
+    grouped >> other_task
+```
