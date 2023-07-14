@@ -218,3 +218,17 @@ with DAG(
 
     grouped >> other_task
 ```
+
+## XCom
+In Apache Airflow, XCom (short for "cross-communication") is a feature that allows tasks within a workflow to exchange messages, small amount of data (2GB - sqlite, 1GB - postgresql, 64KB - mysql), and state information. It enables the sharing of information between tasks, facilitating communication and coordination within a DAG.
+
+```python
+# push
+def _t1(ti):
+    ti.xcom_push(key='hello', value='world')
+
+# pull
+def _t2(ti):
+    t1_value = ti.xcom_pull(task_ids='t1', key='hello')
+    print(t1_value)
+```
