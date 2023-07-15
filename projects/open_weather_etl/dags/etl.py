@@ -3,6 +3,7 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime
 from extract import _extract
 from transform import _transform
+from load import _load
 from airflow.providers.http.sensors.http import HttpSensor
 
 with DAG(
@@ -31,4 +32,9 @@ with DAG(
         python_callable=_transform
     )
 
-    is_api_available >> extract >> transform
+    load = PythonOperator(
+        task_id='load',
+        python_callable=_load
+    )
+
+    is_api_available >> extract >> transform >> load

@@ -10,7 +10,7 @@ def _transform(ti):
         'humidity': extract_value['main']['humidity'],
         'pressure': extract_value['main']['pressure'],
         'timestamp': extract_value['dt']
-    }, )
+    })
     file_name = f"{extract_value['dt']}.csv"
-    transformed_data.to_csv(f'/tmp/{file_name}', header=False, index=False)
+    transformed_data.to_csv(f'/tmp/{file_name}', header=True, index=False)
     return file_name
