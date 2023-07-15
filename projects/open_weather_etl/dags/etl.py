@@ -2,6 +2,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
 from extract import _extract
+from transform import _transform
 from airflow.providers.http.sensors.http import HttpSensor
 
 with DAG(
@@ -25,4 +26,9 @@ with DAG(
         python_callable=_extract
     )
 
-    is_api_available >> extract
+    transform = PythonOperator(
+        task_id='transform',
+        python_callable=_transform
+    )
+
+    is_api_available >> extract >> transform
